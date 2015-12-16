@@ -62,7 +62,7 @@ class NeuralNetwork(object):
         #print 'nabla thetas' [0] == 25x401, [1]==10x26
         for it in xrange(1, iterations+1):
             print 'it: ' + str(it) + ' Cost: ' + str(self.compute_cost())
-            if it%10 == 0:
+            if it%2 == 0:
                 print 'test: ' + str(self.evaluate())
 
             self.X, self.y = shuffle_inputs(self.X, self.y)
@@ -141,13 +141,18 @@ def run():
     X, test_x = X[:training_size], X[training_size:]
     y, test_y = y[:training_size], y[training_size:]
 
-    input_later = 400
-    hidden_layer = 25
+    input_later = X.shape[1]
+    hidden_layer = 100
     output_layer = 10
     sizes = [input_later, hidden_layer, output_layer]
 
     nn = NeuralNetwork(sizes,X,y, test_x, test_y)
-    nn.gradient_descent(200, .9, 7)
+    nn.gradient_descent(200, .9, 1750)
+
+#BENCHMARKS
+    #93%   it=200, eta=.9, minibatch=7, hiddenlayer=100
+    #95.4% it=70,  eta=.9, minibatch=1750, hiddenlayer=100
+    #94.3% it=40, eta=.1, minibatch=1750, hiddenlayer=100
 
 
 if __name__ == '__main__':
