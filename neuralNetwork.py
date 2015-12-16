@@ -14,7 +14,6 @@ class NeuralNetwork(object):
         #self.X.shape == (5000,400)
         #self.y.shape == (5000,10)
         self.X = X
-        self.training_y = y
         self.y = self.convert_y(y, sizes[self.num_layers-1])
         self.test_x, self.test_y = test_x, test_y
 
@@ -59,29 +58,33 @@ class NeuralNetwork(object):
         activations.append(a)
         return zs, activations
 
-    def gradient_descent(self, iterations, eta):
+    def gradient_descent(self, iterations, eta, num_batches):
         #print 'nabla thetas' [0] == 25x401, [1]==10x26
         for it in xrange(1, iterations+1):
-            nabla_thetas = [np.zeros_like(theta) for theta in self.thetas]
             print 'it: ' + str(it) + ' Cost: ' + str(self.compute_cost())
             if it%10 == 0:
-                print 'training: ' + str(self.evaluate(self.X, self.training_y))
                 print 'test: ' + str(self.evaluate())
 
-            delta_nablas = self.backprop()
-            nabla_thetas = [nb+dnb for nb, dnb in zip(nabla_thetas, delta_nablas)]
-            self.thetas = [t - (eta/len(self.y))*nt
-                        for t, nt in zip(self.thetas, nabla_thetas)]
+            self.X, self.y = shuffle_inputs(self.X, self.y)
+            for bn in xrange(num_batches):
+                k = len(self.X) // num_batches
+                batch_x, batch_y = self.X[k*bn:k*(bn+1)], self.y[k*bn:k*(bn+1)]
+
+                nabla_thetas = [np.zeros_like(theta) for theta in self.thetas]
+                delta_nablas = self.backprop(batch_x, batch_y)
+                nabla_thetas = [nb+dnb for nb, dnb in zip(nabla_thetas, delta_nablas)]
+                self.thetas = [t - (eta/len(batch_y))*nt
+                            for t, nt in zip(self.thetas, nabla_thetas)]
 
     #24%, 46%, 61%, 69%, 75%
     #24, 33, 57, 68
-    def backprop(self):
-        #as = [3500x401, 3500x26, 3500x10]  zs = [3500x25, 3500x10]
-        zs, activations = self.feed_forward(self.X)
+    def backprop(self, batch_x, batch_y):
+        #as = [Mx401, Mx26, Mx10]  zs = [Mx25, Mx10]
+        zs, activations = self.feed_forward(batch_x)
         deltas = [np.zeros_like(z) for z in zs]
         delta_nablas = [np.zeros_like(theta) for theta in self.thetas]
 
-        deltas[-1] = activations[-1] - self.y
+        deltas[-1] = activations[-1] - batch_y
         for i in xrange(self.num_layers-2, 0, -1):
             deltas[i-1] = (deltas[i].dot(self.thetas[i]))[:,1:] * sigmoid_gradient(zs[i-1])
 
@@ -144,7 +147,7 @@ def run():
     sizes = [input_later, hidden_layer, output_layer]
 
     nn = NeuralNetwork(sizes,X,y, test_x, test_y)
-    nn.gradient_descent(400, 3)
+    nn.gradient_descent(200, .9, 7)
 
 
 if __name__ == '__main__':
