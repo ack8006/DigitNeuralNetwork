@@ -90,32 +90,6 @@ class NeuralNetwork(object):
 
         return delta_nablas
 
-    #def backprop(self):
-    #    #as = [3500x401, 3500x26, 3500x10]
-    #    a1 = np.hstack([np.ones((len(self.X),1)), self.X])
-    #    z2 = a1.dot(self.thetas[0].T)
-    #    a2 = sigmoid(z2)
-    #    a2 = np.hstack([np.ones((len(a2),1)), a2])
-    #    z3 = a2.dot(self.thetas[1].T)
-    #    a3 = sigmoid(z3)
-
-    #    delta3 = a3-self.y
-    #    delta2 = (delta3.dot(self.thetas[1]))[:,1:] * sigmoid_gradient(z2) #5000x25
-
-    #    #25x401, 10x26
-    #    delta_nablas = [np.zeros_like(theta) for theta in self.thetas]
-
-    #    m = len(self.y)
-
-    #    reg2 = np.hstack([np.zeros((self.thetas[1].shape[0],1)), self.thetas[1][:,1:]])
-    #    delta_nablas[1] = (delta_nablas[1] + delta3.T.dot(a2)) + reg2
-
-#***# This reg might not be the right formula. missing lambda
-    #    reg1 = np.hstack([np.zeros((self.thetas[0].shape[0],1)), self.thetas[0][:,1:]])
-    #    delta_nablas[0] = (delta_nablas[0] + delta2.T.dot(a1)) + reg1
-
-    #    return delta_nablas
-
     def convert_y(self, y, output_size):
         # 1 is [1,0,0,0,0,0,0,0,0,0]
         # 0 is [0,0,0,0,0,0,0,0,0,1]
@@ -131,7 +105,7 @@ class NeuralNetwork(object):
         return np.random.randn(num_output_layers, num_input_layers+1)*2*e-e
 
     def evaluate(self, test_x=None, test_y=None):
-        if not test_x or not test_y:
+        if test_x is None or test_y is None:
             test_x, test_y = self.test_x, self.test_y
         correct = 0
         for x, y in zip(test_x, test_y):
@@ -153,14 +127,16 @@ def sigmoid_gradient(z):
     #return np.muliply(sigmoid(z),(1-sigmoid(z)))
     return sigmoid(z)*(1-sigmoid(z))
 
+def shuffle_inputs(X,y):
+    shuffle_order = np.random.permutation(len(X))
+    return X[shuffle_order], y[shuffle_order]
+
 def run():
     data = scipy.io.loadmat('ex4data1.mat')
-
-    xys = zip(data['X'], data['y'])
-    np.random.shuffle(xys)
-    training, test = xys[:3500], xys[3500:]
-    X,y = zip(*training)
-    test_x, test_y = zip(*test)
+    X, y = shuffle_inputs(data['X'], data['y'])
+    training_size = len(X)*0.7
+    X, test_x = X[:training_size], X[training_size:]
+    y, test_y = y[:training_size], y[training_size:]
 
     input_later = 400
     hidden_layer = 25
@@ -169,9 +145,6 @@ def run():
 
     nn = NeuralNetwork(sizes,X,y, test_x, test_y)
     nn.gradient_descent(400, 3)
-
-    #800, 1 == 83.92
-    #1200, 2 == 91.07
 
 
 if __name__ == '__main__':
