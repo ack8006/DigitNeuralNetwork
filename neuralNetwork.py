@@ -64,11 +64,11 @@ class NeuralNetwork(object):
         #print 'nabla thetas' [0] == 25x401, [1]==10x26
         for it in xrange(1, iterations+1):
             print 'it: ' + str(it) + ' Cost: ' + str(self.compute_cost())
-            if it%3 == 0:
+            if it%2 == 0:
                 print 'training: ' + str(self.evaluate(self.X, self.train_y))
                 print 'test: ' + str(self.evaluate())
 
-            if it%18 == 0:
+            if it%2 == 0:
                 eta = self.update_learning_rate(eta, .9)
                 lamb = self.update_learning_rate(lamb, .95)
                 print eta, lamb
@@ -168,21 +168,21 @@ def ex4():
 
 def run():
     train_set, valid_set, test_set = load_mnist_data()
-    X, y = shuffle_inputs(train_set[0][:10000], train_set[1][:10000])
-    test_x, test_y = shuffle_inputs(test_set[0][:1000], test_set[1][:1000])
+    #X, y = shuffle_inputs(train_set[0][:10000], train_set[1][:10000])
+    #test_x, test_y = shuffle_inputs(test_set[0][:1000], test_set[1][:1000])
 
     #train_set, valid_set, test_set = load_ex4_data()
-    #X, y = shuffle_inputs(train_set[0], train_set[1])
-    #test_x, test_y = shuffle_inputs(test_set[0], test_set[1])
+    X, y = shuffle_inputs(train_set[0], train_set[1])
+    test_x, test_y = shuffle_inputs(test_set[0], test_set[1])
 
     input_later = X.shape[1]
-    hidden_layer = 50
+    hidden_layer = 120
     output_layer = 10
     sizes = [input_later, hidden_layer, output_layer]
 
     nn = NeuralNetwork(sizes,X,y, test_x, test_y)
-    nn.gradient_descent(400, .5, 4.5, 500)
-    #nn.gradient_descent(200, .2, 10, 500)
+    #nn.gradient_descent(400, .5, 4.5, 200)
+    nn.gradient_descent(200, .4, 5, 5000)
 
 #Bench ex4
     #94.2, 96.2, it100, eta.5, lamb5, mini200, hidden100
@@ -193,7 +193,12 @@ def run():
     #94.3, 98 it 400, eta.5, lamb4.5, mini200, hidden25 (18, .9, .95)
 
 #Bench mnist
-    #85, 87, it200, eta.2, lamb10, mini500, hidden100
+#Full
+    #95.9, 96.9  it125, eta.2, lamb10, mini500, hidden100, (18.9.95)
+    #97.7 99.1  it46, eta.2, lamb5, mini5000, hidden120, (18,.9,.95)
+    #97.87 99.7  it64, eta.4, lamb5, mini5000, hidden5000, (2,.9,.95)
+    #   it40, eta.4, lamb8, mini5000, hidden5000, (2,.9,.95)
+
 
 
 #BENCHMARKS
